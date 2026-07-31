@@ -1,0 +1,8 @@
+import { mkdir, writeFile } from "node:fs/promises";
+import { dirname } from "node:path";
+import { MappedReport } from "../auditors/types.js";
+
+export async function writeJsonReport(report: MappedReport, outputPath = "reports/report.json"): Promise<void> {
+  await mkdir(dirname(outputPath), { recursive: true });
+  await writeFile(outputPath, JSON.stringify(report, null, 2), "utf-8");
+}
