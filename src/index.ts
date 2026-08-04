@@ -1,23 +1,18 @@
-import { runAxeAudit } from "./auditors/axe/axe-auditor.js";
-import { runW3CAudit } from "./auditors/w3c/w3c-auditor.js";
 import {
   buildPipelineReport,
   writePipelineReport,
 } from "./reporters/report-generator.js";
-import { detectAssistiveTechOnPage } from "./auditors/assistive-tech-detector.js";
-import { chromium } from "playwright";
-import { writeJsonReport } from "./reporters/json-reporter.js";
 import { printTerminalReport } from "./reporters/terminal-reporter.js";
 import chalk from "chalk";
-import { runConfigAudit } from "./auditors/audit-runner.js";
+import { runAudit } from "./auditors/audit-runner.js";
 import { loadAuditConfig } from "./navigation-engine.js";
-import { mapResults } from "./mapper.js";
+import type { AuditSiteConfig } from "./auditors/audit-config.js";
 
 async function main() {
   const { url, configPath, noW3c, jsonOutput, pipelineJson } = parseArgs();
 
   if (configPath) {
-    await runPipelineFromConfig(configPath, pipelineJson);
+    await runMultiUrlAudit(configPath, pipelineJson);
     return;
   }
 
@@ -49,74 +44,67 @@ async function runSingleUrlAudit(
   jsonOutput: string,
 ) {
   assertValidUrl(url);
-  const startedAt = Date.now();
-
   console.log(`Iniciando auditoria (modo URL unica) para: ${url}`);
 
-  const [axe, assistiveTech, w3c] = await Promise.all([
-    runAxeAudit(url),
-    (async () => {
-      const browser = await chromium.launch();
-      const page = await browser.newPage();
-      try {
-        await page.goto(url, {
-          waitUntil: "domcontentloaded",
-          timeout: 60_000,
-        });
-        return await detectAssistiveTechOnPage(page);
-      } finally {
-        await page.close();
-        await browser.close();
-      }
-    })(),
-    noW3c ? Promise.resolve(undefined) : runW3CAudit(url),
-  ]);
+  const config = buildSingleUrlConfig(url, !noW3c);
+  const { records, assistiveAggregated, plan, durationMs } =
+    await runAudit(config);
+  const report = buildPipelineReport(
+    records,
+    plan.flows.length,
+    assistiveAggregated,
+    durationMs,
+  );
+  await writePipelineReport(report, jsonOutput);
+  printTerminalReport(report);
 
-  const mapped = mapResults({
-    url,
-    startedAt,
-    axe,
-    assistiveTech,
-    w3c:
-      w3c ??
-      ({
-        url,
-        checked: false,
-        apiAvailable: false,
-        findings: [],
-        rawSummary: { errors: 0, warnings: 0 },
-      } as const),
-  });
-
-  await writeJsonReport(mapped, jsonOutput);
-  printTerminalReport(mapped);
-
-  console.log(`\nArquivos gerados: ${jsonOutput} `);
+  console.log(`\nArquivo gerado: ${jsonOutput} `);
 }
 
-async function runPipelineFromConfig(configPath: string, pipelineJson: string) {
+async function runMultiUrlAudit(configPath: string, pipelineJson: string) {
   console.log(`Iniciando auditoria multi-pagina (config: ${configPath})`);
   const config = await loadAuditConfig(configPath);
-  const { records, assistiveAggregated, plan } = await runConfigAudit(config);
+  const { records, assistiveAggregated, plan, durationMs } =
+    await runAudit(config);
   const flowsCount = plan.flows.length;
-  const report = buildPipelineReport(records, flowsCount, assistiveAggregated);
+  const report = buildPipelineReport(
+    records,
+    flowsCount,
+    assistiveAggregated,
+    durationMs,
+  );
   await writePipelineReport(report, pipelineJson);
 
   console.log(chalk.bold("\n=== Resumo (pipeline) ==="));
-  console.log(`Rotas auditadas: ${report.routesAudited}`);
-  console.log(`Fluxos autenticados: ${report.flowsAudited}`);
+  console.log(`Rotas auditadas: ${report.summary.routesAudited}`);
+  console.log(`Fluxos autenticados: ${report.summary.flowsAudited}`);
   console.log(
-    `VLibras: ${report.assistiveTechnologies.vlibras ? "sim" : "nao"}`,
+    `VLibras: ${report.summary.assistiveTechnologies.vlibras ? "sim" : "nao"}`,
   );
   console.log(
-    `Hand Talk: ${report.assistiveTechnologies.handTalk ? "sim" : "nao"}`,
+    `Hand Talk: ${report.summary.assistiveTechnologies.handTalk ? "sim" : "nao"}`,
   );
   report.results.forEach((r) => {
     console.log(
-      `- ${r.path}${r.flow ? ` [${r.flow}]` : ""} | score: ${r.score ?? "N/A"} | criticos: ${r.criticalIssues}`,
+      `- ${r.path ?? r.url}${r.flowName ? ` [${r.flowName}]` : ""} | score: ${r.score ?? "N/A"} | criticos: ${r.criticalIssues}`,
     );
   });
-  console.log(`\nArquivos gerados: ${pipelineJson} `);
+  console.log(`\nArquivo gerado: ${pipelineJson} `);
+}
+
+function buildSingleUrlConfig(
+  url: string,
+  includeW3c: boolean,
+): AuditSiteConfig {
+  const parsed = new URL(url);
+  const path = `${parsed.pathname}${parsed.search}` || "/";
+
+  return {
+    baseUrl: parsed.origin,
+    routes: [path],
+    authenticatedFlows: [],
+    includeW3c,
+  };
 }
 
 function parseArgs() {

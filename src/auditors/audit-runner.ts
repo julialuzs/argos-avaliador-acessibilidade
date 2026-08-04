@@ -18,21 +18,23 @@ import { mergeEmagCodesForReport } from "../mappers/emag-mapper.js";
 import type { AssistiveTechDetection, Finding } from "./types.js";
 
 export interface RouteAuditRecord {
-  path: string;
+  path?: string;
   flowName?: string;
   url: string;
-  score: number | null;
+  score: number;
   criticalIssues: number;
   emagMappings: string[];
   findings: Finding[];
   assistiveTechnologies: AssistiveTechDetection;
 }
 
-export async function runConfigAudit(config: AuditSiteConfig): Promise<{
+export async function runAudit(config: AuditSiteConfig): Promise<{
   records: RouteAuditRecord[];
   assistiveAggregated: AssistiveTechDetection;
   plan: AuditPlan;
+  durationMs: number;
 }> {
+  const startedAt = Date.now();
   const plan = buildAuditPlan(config);
   const cdpPort = await getFreeTcpPort();
   const userDataDir = await mkdtemp(join(tmpdir(), "poc-a11y-")); //TODO: alterar nome do diretório
@@ -117,6 +119,7 @@ export async function runConfigAudit(config: AuditSiteConfig): Promise<{
       records,
       assistiveAggregated: mergeAssistiveTechDetections(assistiveParts),
       plan,
+      durationMs: Date.now() - startedAt,
     };
   } finally {
     await context.close();
@@ -169,8 +172,7 @@ async function auditLoadedPage(
     path: target.path,
     flowName: target.flowName,
     url: target.fullUrl,
-    // score: lh.score,
-    score: null,
+    score: 0,
     criticalIssues,
     emagMappings: mergeEmagCodesForReport(findings),
     findings,
