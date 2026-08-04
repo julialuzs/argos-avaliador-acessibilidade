@@ -36,7 +36,7 @@ export async function runW3CHtmlAudit(url: string): Promise<W3CAuditResult> {
           ? "Erro de validação estrutural"
           : "Aviso estrutural",
       description: messageTraduzida.trim(),
-      impact: messageType,
+    //   impact: messageType,
       severity: normalizeSeverity(messageType),
       recommendation: recommendationFromContext(
         messageTraduzida,
@@ -111,7 +111,7 @@ function mapCssIssuesToFindings(
       source: "w3c-css" as const,
       title: kind === "error" ? "Erro de validação CSS" : "Aviso de validação CSS",
       description: location ? `${messageTraduzida.trim()} - ${location}` : messageTraduzida.trim(),
-      impact: messageType,
+    //   impact: messageType,
       severity: normalizeSeverity(messageType),
       recommendation: recommendationFromContext(messageTraduzida, item.type ?? ""),
       emagCriteria: mapToEmagCriteria(`${messageTraduzida} ${item.type ?? ""}`),

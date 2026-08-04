@@ -3,12 +3,12 @@ import { Severity } from "../auditors/types.js";
 export function normalizeSeverity(input?: string): Severity {
   const value = (input || "").toLowerCase();
 
-  if (value.includes("critical")) return "critical";
-  if (value.includes("serious") || value.includes("high")) return "serious";
-  if (value.includes("moderate") || value.includes("medium")) return "moderate";
-  if (value.includes("minor") || value.includes("low")) return "minor";
+  if (value.includes("critical")) return 1;
+  if (value.includes("serious") || value.includes("high")) return 2;
+  if (value.includes("moderate") || value.includes("medium")) return 3;
+  if (value.includes("minor") || value.includes("low")) return 4;
 
-  return "info";
+  return 5;
 }
 
 export function recommendationFromContext(title: string, description: string): string {

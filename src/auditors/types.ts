@@ -1,13 +1,13 @@
 import { W3CAuditResult } from "./w3c/types.js";
 
-export type Severity = "critical" | "serious" | "moderate" | "minor" | "info";
+export type Severity = 1 | 2 | 3 | 4 | 5; // Crítico - 1, Alto - 2, Médio - 3, Baixo - 4, Informação - 5
 
 export interface Finding {
   id: string;
   source: "axe" | "w3c" | "w3c-css";
   title: string;
   description: string;
-  impact?: string;
+//   impact?: string;
   severity: Severity;
   recommendation: string;
   emagCriteria: string[];

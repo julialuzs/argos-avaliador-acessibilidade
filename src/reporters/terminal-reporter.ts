@@ -11,11 +11,11 @@ export function printTerminalReport(report: MappedReport): void {
   console.log(`Total de achados: ${summary.totalFindings}\n`);
 
   console.log(chalk.bold("Severidades:"));
-  console.log(`- Critica: ${summary.bySeverity.critical}`);
-  console.log(`- Alta: ${summary.bySeverity.serious}`);
-  console.log(`- Media: ${summary.bySeverity.moderate}`);
-  console.log(`- Baixa: ${summary.bySeverity.minor}`);
-  console.log(`- Informativa: ${summary.bySeverity.info}\n`);
+  console.log(`- Critica: ${summary.bySeverity[1]}`);
+  console.log(`- Alta: ${summary.bySeverity[2]}`);
+  console.log(`- Media: ${summary.bySeverity[3]}`);
+  console.log(`- Baixa: ${summary.bySeverity[4]}`);
+  console.log(`- Informativa: ${summary.bySeverity[5]}\n`);
 
   console.log(chalk.bold("Tecnologias assistivas BR:"));
   console.log(

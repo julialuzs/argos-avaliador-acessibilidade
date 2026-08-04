@@ -17,28 +17,6 @@ import {
 import { mergeEmagCodesForReport } from "../mappers/emag-mapper.js";
 import type { AssistiveTechDetection, Finding } from "./types.js";
 
-export async function getFreeTcpPort(): Promise<number> {
-  return new Promise((resolve, reject) => {
-    const srv = createServer();
-    srv.once("error", reject);
-    srv.listen(0, "127.0.0.1", () => {
-      const addr = srv.address();
-      srv.close(() => {
-        if (
-          typeof addr === "object" &&
-          addr &&
-          "port" in addr &&
-          typeof addr.port === "number"
-        ) {
-          resolve(addr.port);
-        } else {
-          reject(new Error("Porta livre indisponivel"));
-        }
-      });
-    });
-  });
-}
-
 export interface RouteAuditRecord {
   path: string;
   flowName?: string;
@@ -50,55 +28,6 @@ export interface RouteAuditRecord {
   assistiveTechnologies: AssistiveTechDetection;
 }
 
-function dedupeFindings(findings: Finding[]): Finding[] {
-  const seen = new Set<string>();
-  const output: Finding[] = [];
-
-  for (const finding of findings) {
-    const key = `${finding.source}|${finding.title}|${finding.description}`;
-    if (seen.has(key)) continue;
-    seen.add(key);
-    output.push(finding);
-  }
-
-  return output;
-}
-
-async function auditLoadedPage(
-  page: Page,
-  target: PlannedAuditTarget,
-  config: AuditSiteConfig,
-  cdpPort: number,
-): Promise<RouteAuditRecord> {
-  const axe = await runAxeOnPage(page, target.fullUrl);
-  const assist = await detectAssistiveTechOnPage(page);
-
-  const w3c = config.includeW3c ? await runW3CAudit(target.fullUrl) : undefined;
-  const w3cFindings = w3c?.findings ?? [];
-
-  await page.goto(target.fullUrl, {
-    waitUntil: "domcontentloaded",
-    timeout: 60_000,
-  });
-
-  const findings = dedupeFindings([...axe.findings, ...w3cFindings]);
-  const criticalIssues = findings.filter(
-    (f) => f.severity === "critical",
-  ).length;
-
-  return {
-    path: target.path,
-    flowName: target.flowName,
-    url: target.fullUrl,
-    // score: lh.score,
-    score: null,
-    criticalIssues,
-    emagMappings: mergeEmagCodesForReport(findings),
-    findings,
-    assistiveTechnologies: assist,
-  };
-}
-
 export async function runConfigAudit(config: AuditSiteConfig): Promise<{
   records: RouteAuditRecord[];
   assistiveAggregated: AssistiveTechDetection;
@@ -106,7 +35,7 @@ export async function runConfigAudit(config: AuditSiteConfig): Promise<{
 }> {
   const plan = buildAuditPlan(config);
   const cdpPort = await getFreeTcpPort();
-  const userDataDir = await mkdtemp(join(tmpdir(), "poc-a11y-"));
+  const userDataDir = await mkdtemp(join(tmpdir(), "poc-a11y-")); //TODO: alterar nome do diretório
 
   const baseUrl = config.baseUrl.replace(/\/$/, "");
   const records: RouteAuditRecord[] = [];
@@ -131,7 +60,12 @@ export async function runConfigAudit(config: AuditSiteConfig): Promise<{
         waitUntil: "domcontentloaded",
         timeout: 60_000,
       });
-      const rec = await auditLoadedPage(page, target, config, cdpPort);
+      const rec = await auditLoadedPage(
+        page,
+        target,
+        config,
+        // cdpPort
+      );
       records.push(rec);
       assistiveParts.push(rec.assistiveTechnologies);
     }
@@ -146,7 +80,12 @@ export async function runConfigAudit(config: AuditSiteConfig): Promise<{
             waitUntil: "domcontentloaded",
             timeout: 60_000,
           });
-          const rec = await auditLoadedPage(page, target, config, cdpPort);
+          const rec = await auditLoadedPage(
+            page,
+            target,
+            config,
+            // cdpPort
+          );
           records.push(rec);
           assistiveParts.push(rec.assistiveTechnologies);
 
@@ -162,7 +101,12 @@ export async function runConfigAudit(config: AuditSiteConfig): Promise<{
             waitUntil: "domcontentloaded",
             timeout: 60_000,
           });
-          const rec = await auditLoadedPage(page, target, config, cdpPort);
+          const rec = await auditLoadedPage(
+            page,
+            target,
+            config,
+            // cdpPort
+          );
           records.push(rec);
           assistiveParts.push(rec.assistiveTechnologies);
         }
@@ -177,4 +121,73 @@ export async function runConfigAudit(config: AuditSiteConfig): Promise<{
   } finally {
     await context.close();
   }
+}
+
+export async function getFreeTcpPort(): Promise<number> {
+  return new Promise((resolve, reject) => {
+    const srv = createServer();
+    srv.once("error", reject);
+    srv.listen(0, "127.0.0.1", () => {
+      const addr = srv.address();
+      srv.close(() => {
+        if (
+          typeof addr === "object" &&
+          addr &&
+          "port" in addr &&
+          typeof addr.port === "number"
+        ) {
+          resolve(addr.port);
+        } else {
+          reject(new Error("Porta livre indisponivel"));
+        }
+      });
+    });
+  });
+}
+
+async function auditLoadedPage(
+  page: Page,
+  target: PlannedAuditTarget,
+  config: AuditSiteConfig,
+  //   cdpPort: number,
+): Promise<RouteAuditRecord> {
+  const axe = await runAxeOnPage(page, target.fullUrl);
+  const assist = await detectAssistiveTechOnPage(page);
+
+  const w3c = config.includeW3c ? await runW3CAudit(target.fullUrl) : undefined;
+  const w3cFindings = w3c?.findings ?? [];
+
+  await page.goto(target.fullUrl, {
+    waitUntil: "domcontentloaded",
+    timeout: 60_000,
+  });
+
+  const findings = dedupeFindings([...axe.findings, ...w3cFindings]);
+  const criticalIssues = findings.filter((f) => f.severity === 1).length;
+
+  return {
+    path: target.path,
+    flowName: target.flowName,
+    url: target.fullUrl,
+    // score: lh.score,
+    score: null,
+    criticalIssues,
+    emagMappings: mergeEmagCodesForReport(findings),
+    findings,
+    assistiveTechnologies: assist,
+  };
+}
+
+function dedupeFindings(findings: Finding[]): Finding[] {
+  const seen = new Set<string>();
+  const output: Finding[] = [];
+
+  for (const finding of findings) {
+    const key = `${finding.source}|${finding.title}|${finding.description}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    output.push(finding);
+  }
+
+  return output;
 }

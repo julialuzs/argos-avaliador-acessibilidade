@@ -63,11 +63,11 @@ function dedupeFindings(findings: Finding[]): Finding[] {
 
 function countBySeverity(findings: Finding[]): Record<Severity, number> {
   const initial: Record<Severity, number> = {
-    critical: 0,
-    serious: 0,
-    moderate: 0,
-    minor: 0,
-    info: 0,
+    1: 0,
+    2: 0,
+    3: 0,
+    4: 0,
+    5: 0,
   };
 
   for (const finding of findings) {

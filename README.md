@@ -37,7 +37,7 @@ npx playwright install chromium
 npm run audit -- https://www.gov.br
 ```
 
-Opcoes:
+Opções:
 
 - `--no-w3c` desativa validacao W3C
 - `--json ./saida/meu-relatorio.json` altera caminho do JSON
@@ -52,28 +52,31 @@ npm run audit -- https://www.gov.br --json ./reports/report-gov.json
 
 ```text
 src/
-  auditors/
-    axe-auditor.ts
-    w3c-auditor.ts
-  config/
-    raw-report-writer.ts
-    enrichment.ts
-    translator.ts
-  handlers/
-    auth-handler.ts
-  mappers/
-    emag-mapper.ts
-  reporters/
-    html-reporter.ts
-    json-reporter.ts
-    report-generator.ts
-    terminal-reporter.ts
-  mapper.ts
-  index.ts
-  types.ts
+├── auditors/
+│   ├── axe/
+│   │   └── axe-auditor.ts
+│   ├── w3c/
+│   │   ├── config.ts
+│   │   ├── types.ts
+│   │   ├── w3c-auditor.ts
+│   │   └── w3c.service.ts
+│   ├── assistive-tech-detector.ts
+│   ├── audit-config.ts
+│   ├── audit-runner.ts
+│   └── types.ts
+├── config/
+│   ├── enrichment.ts
+│   ├── raw-report-writer.ts
+│   └── translator.ts
+├── handlers/
+│   └── auth-handler.ts
+├── mappers/
+│   └── emag-mapper.ts
+├── reporters/
+│   ├── json-reporter.ts
+│   ├── report-generator.ts
+│   └── terminal-reporter.ts
+├── index.ts
+├── mapper.ts
+└── navigation-engine.ts
 ```
-
-## Observacoes
-
-- O mapeamento eMAG desta POC e simplificado por palavras-chave.
-- Para uso produtivo, recomenda-se evoluir para mapeamento formal por regra WCAG/eMAG e incorporar historico para auditoria continua.

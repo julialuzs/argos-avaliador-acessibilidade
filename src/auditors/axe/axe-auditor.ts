@@ -60,7 +60,7 @@ function mapViolationsToFindings(violations: Result[]): Finding[] {
       source: "axe",
       title: violation.help,
       description: violation.description,
-      impact: violation.impact ?? "unknown",
+    //   impact: violation.impact ?? "unknown",
       severity: normalizeSeverity(violation.impact ?? undefined),
       recommendation: recommendationFromContext(
         violation.description,
@@ -71,7 +71,7 @@ function mapViolationsToFindings(violations: Result[]): Finding[] {
       ),
       wcagRefs: violation.tags.filter((tag: string) => tag.startsWith("wcag")),
       htmlElement: violation.nodes[0]?.html,
-      helpUrl: `${violation.helpUrl}&lang=pt-BR`,
+      helpUrl: `${violation.helpUrl}&lang=pt`,
       elementCount: violation.nodes.length,
     };
   });
