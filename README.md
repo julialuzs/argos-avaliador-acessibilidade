@@ -48,6 +48,13 @@ Exemplo completo:
 npm run audit -- https://www.gov.br --json ./reports/report-gov.json
 ```
 
+ou
+
+
+```bash
+npm run audit -- --config argos.config.ci.json --out reports/report.json
+```
+
 ## Estrutura
 
 ```text

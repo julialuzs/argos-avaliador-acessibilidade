@@ -24,7 +24,8 @@ export async function loadAuditConfig(configPath: string): Promise<AuditSiteConf
     routes: parsed.routes ?? [],
     authenticatedFlows: parsed.authenticatedFlows ?? [],
     includeW3c: parsed.includeW3c ?? false,
-    baseUrl: parsed.baseUrl.replace(/\/$/, "")
+    baseUrl: parsed.baseUrl.replace(/\/$/, ""),
+    projectId: parsed.projectId,
   };
 }
 

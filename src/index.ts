@@ -1,12 +1,15 @@
 import {
-  buildPipelineReport,
+  buildReport,
   writePipelineReport,
+  type ConsolidatedPipelineReport,
 } from "./reporters/report-generator.js";
+import { sendReportToApi } from "./reporters/report-uploader.js";
 import { printTerminalReport } from "./reporters/terminal-reporter.js";
 import chalk from "chalk";
 import { runAudit } from "./auditors/audit-runner.js";
 import { loadAuditConfig } from "./navigation-engine.js";
 import type { AuditSiteConfig } from "./auditors/audit-config.js";
+import { API_RELATORIOS_ENDPOINT } from "./config/api.js";
 
 async function main() {
   const { url, configPath, noW3c, jsonOutput, pipelineJson } = parseArgs();
@@ -49,7 +52,7 @@ async function runSingleUrlAudit(
   const config = buildSingleUrlConfig(url, !noW3c);
   const { records, assistiveAggregated, plan, durationMs } =
     await runAudit(config);
-  const report = buildPipelineReport(
+  const report = buildReport(
     records,
     plan.flows.length,
     assistiveAggregated,
@@ -67,7 +70,7 @@ async function runMultiUrlAudit(configPath: string, pipelineJson: string) {
   const { records, assistiveAggregated, plan, durationMs } =
     await runAudit(config);
   const flowsCount = plan.flows.length;
-  const report = buildPipelineReport(
+  const report = buildReport(
     records,
     flowsCount,
     assistiveAggregated,
@@ -90,6 +93,25 @@ async function runMultiUrlAudit(configPath: string, pipelineJson: string) {
     );
   });
   console.log(`\nArquivo gerado: ${pipelineJson} `);
+
+  await trySendingReportToApi(config, report);
+}
+
+async function trySendingReportToApi(
+  config: AuditSiteConfig,
+  report: ConsolidatedPipelineReport,
+): Promise<void> {
+  if (config.projectId == null || config.projectId === "") {
+    console.log("\nEnvio para API ignorado (projectId não configurado).");
+    return;
+  }
+
+  console.log(`\nEnviando relatório para ${API_RELATORIOS_ENDPOINT} ...`);
+  await sendReportToApi({
+    projectId: config.projectId,
+    report,
+  });
+  console.log("Relatório enviado com sucesso.");
 }
 
 function buildSingleUrlConfig(

@@ -21,7 +21,7 @@ export interface ConsolidatedPipelineReport {
   results: RouteAuditRecord[];
 }
 
-export function buildPipelineReport(
+export function buildReport(
   records: RouteAuditRecord[],
   flowsAudited: number,
   assistiveAggregated: AssistiveTechDetection,

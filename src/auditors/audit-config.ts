@@ -17,8 +17,8 @@ export interface AuditSiteConfig {
   baseUrl: string;
   routes?: string[];
   authenticatedFlows?: AuthenticatedFlow[];
-  /** Quando true, executa validação W3C Nu por URL (requer URL acessível publicamente). */
   includeW3c?: boolean;
+  projectId?: string | number;
 }
 
 export type AuditStepKind = "public" | "flow-login" | "flow-post-login";

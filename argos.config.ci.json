@@ -1,6 +1,8 @@
 {
   "baseUrl": "http://127.0.0.1:8765",
   "routes": ["/", "/sobre"],
+  "includeW3c": false,
+  "projectId": "6",
   "authenticatedFlows": [
     {
       "name": "dashboard-flow",
