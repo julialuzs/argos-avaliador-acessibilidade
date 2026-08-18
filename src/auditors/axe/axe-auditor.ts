@@ -5,13 +5,11 @@ import axe from "axe-core";
 import type { Result } from "axe-core";
 import ptBR from "axe-core/locales/pt_BR.json" with { type: "json" };
 import { mapToEmagCriteria } from "../../mappers/emag-mapper.js";
-import {
-  normalizeSeverity,
-  recommendationFromContext,
-} from "../../config/enrichment.js";
+import { normalizeSeverity } from "../../mappers/severity-mapper.js";
 // import { translateToPortuguese } from "../../config/translator.js";
-import { writeRawApiReport } from "../../config/raw-report-writer.js";
+import { writeRawApiReport } from "../../helpers/raw-report-writer.js";
 import { AxeAuditResult, Finding } from "../types.js";
+import { recommendationFromContext } from "../../helpers/translator.js";
 
 /** axe-core source with pt_BR locale applied in the browser context. */
 const axeSource = `${axe.source};axe.configure(${JSON.stringify({ locale: ptBR })});`;
@@ -60,14 +58,14 @@ function mapViolationsToFindings(violations: Result[]): Finding[] {
       source: "axe",
       title: violation.help,
       description: violation.description,
-    //   impact: violation.impact ?? "unknown",
+      //   impact: violation.impact ?? "unknown",
       severity: normalizeSeverity(violation.impact ?? undefined),
       recommendation: recommendationFromContext(
-        violation.description,
+        violation.help,
         violation.description,
       ),
       emagCriteria: mapToEmagCriteria(
-        `${violation.description} ${violation.description}`,
+        `${violation.help} ${violation.description}`,
       ),
       wcagRefs: violation.tags.filter((tag: string) => tag.startsWith("wcag")),
       htmlElement: violation.nodes[0]?.html,

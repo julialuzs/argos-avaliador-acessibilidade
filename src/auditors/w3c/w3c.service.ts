@@ -1,4 +1,4 @@
-import { writeRawApiReport } from "../../config/raw-report-writer.js";
+import { writeRawApiReport } from "../../helpers/raw-report-writer.js";
 import { BASE_W3C_CSS_CHECKER, BASE_W3C_HTML_CHECKER } from "./config.js";
 import { CssValidationPayload, W3CResponse } from "./types.js";
 

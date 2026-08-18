@@ -1,4 +1,4 @@
-import { API_RELATORIOS_ENDPOINT } from "../config/api.js";
+import { API_RELATORIOS_ENDPOINT } from "../config.js";
 import http from "node:http";
 import https from "node:https";
 import type { ConsolidatedPipelineReport } from "./report-generator.js";

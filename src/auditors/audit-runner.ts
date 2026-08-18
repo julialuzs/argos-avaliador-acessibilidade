@@ -15,7 +15,15 @@ import {
   mergeAssistiveTechDetections,
 } from "./assistive-tech-detector.js";
 import { mergeEmagCodesForReport } from "../mappers/emag-mapper.js";
-import type { AssistiveTechDetection, Finding } from "./types.js";
+import {
+  countBySeverity,
+  generateScore,
+} from "../reporters/score-generator.js";
+import {
+  SeverityTypes,
+  type AssistiveTechDetection,
+  type Finding,
+} from "./types.js";
 
 export interface RouteAuditRecord {
   path?: string;
@@ -62,12 +70,7 @@ export async function runAudit(config: AuditSiteConfig): Promise<{
         waitUntil: "domcontentloaded",
         timeout: 60_000,
       });
-      const rec = await auditLoadedPage(
-        page,
-        target,
-        config,
-        // cdpPort
-      );
+      const rec = await auditLoadedPage(page, target, config);
       records.push(rec);
       assistiveParts.push(rec.assistiveTechnologies);
     }
@@ -166,13 +169,19 @@ async function auditLoadedPage(
   });
 
   const findings = dedupeFindings([...axe.findings, ...w3cFindings]);
-  const criticalIssues = findings.filter((f) => f.severity === 1).length;
+  const criticalIssues = findings.filter(
+    (f) => f.severity === SeverityTypes.Critical,
+  ).length;
+  const score = generateScore(
+    countBySeverity(findings),
+    assist.vlibras.detected || assist.handTalk.detected,
+  );
 
   return {
     path: target.path,
     flowName: target.flowName,
     url: target.fullUrl,
-    score: 0,
+    score,
     criticalIssues,
     emagMappings: mergeEmagCodesForReport(findings),
     findings,

@@ -2,6 +2,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
 import type { AssistiveTechDetection, Severity } from "../auditors/types.js";
 import { RouteAuditRecord } from "../auditors/audit-runner.js";
+import { countBySeverity, generateScore } from "./score-generator.js";
 
 export interface ConsolidatedPipelineReport {
   summary: {
@@ -29,18 +30,22 @@ export function buildReport(
 ): ConsolidatedPipelineReport {
   const allFindings = records.flatMap((r) => r.findings);
   const bySeverity = countBySeverity(allFindings);
+  const assistiveTechnologies = {
+    vlibras: assistiveAggregated.vlibras.detected,
+    handTalk: assistiveAggregated.handTalk.detected,
+  };
 
   return {
     summary: {
-      score: 0, //TODO: adicionar algoritmo de score
+      score: generateScore(
+        bySeverity,
+        assistiveTechnologies.vlibras || assistiveTechnologies.handTalk,
+      ),
       totalFindings: allFindings.length,
       bySeverity,
       routesAudited: records.length,
       flowsAudited,
-      assistiveTechnologies: {
-        vlibras: assistiveAggregated.vlibras.detected,
-        handTalk: assistiveAggregated.handTalk.detected,
-      },
+      assistiveTechnologies,
     },
     auditDate: new Date().toISOString(),
     durationMs,
@@ -58,22 +63,4 @@ export async function writePipelineReport(
 ): Promise<void> {
   await mkdir(dirname(outputPath), { recursive: true });
   await writeFile(outputPath, JSON.stringify(report, null, 2), "utf-8");
-}
-
-function countBySeverity(
-  findings: RouteAuditRecord["findings"],
-): Record<Severity, number> {
-  const initial: Record<Severity, number> = {
-    1: 0,
-    2: 0,
-    3: 0,
-    4: 0,
-    5: 0,
-  };
-
-  for (const finding of findings) {
-    initial[finding.severity] += 1;
-  }
-
-  return initial;
 }

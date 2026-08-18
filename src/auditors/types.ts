@@ -1,4 +1,12 @@
-export type Severity = 1 | 2 | 3 | 4 | 5; // Crítico - 1, Alto - 2, Médio - 3, Baixo - 4, Informação - 5
+export type Severity = 1 | 2 | 3 | 4 | 5;
+
+export const SeverityTypes: { [key: string]: Severity } = {
+  Critical: 1,
+  Serious: 2,
+  Moderate: 3,
+  Minor: 4,
+  Informative: 5,
+};
 
 export interface Finding {
   id: string;
