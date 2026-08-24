@@ -1,16 +1,21 @@
-import { SeverityTypes, type Finding, type Severity } from "../auditors/types.js";
+import { RouteAuditRecord } from "../auditors/audit-runner.js";
+import {
+  SeverityTypes,
+  type Finding,
+  type Severity,
+} from "../auditors/types.js";
 
 const SEVERITY_WEIGHTS: Record<Severity, number> = {
-  1: 1.25,
-  2: 1.0,
-  3: 0.75,
-  4: 0.5,
-  5: 0.25,
+  1: 1,
+  2: 0.5,
+  3: 0.25,
+  4: 0.2,
+  5: 0,
 };
 
 const ASSISTIVE_TECH_BONUS = 1;
 
-export function generateScore(
+export function generatePageScore(
   bySeverity: Record<Severity, number>,
   assistiveTechnologiesDetected: boolean,
 ): number {
@@ -44,4 +49,9 @@ export function countBySeverity(findings: Finding[]): Record<Severity, number> {
   }
 
   return initial;
+}
+
+export function generateTotalScore(records: RouteAuditRecord[]): number {
+  const totalScore = records.reduce((acc, record) => acc + record.score, 0);
+  return Math.round(totalScore / records.length);
 }

@@ -17,7 +17,7 @@ import {
 import { mergeEmagCodesForReport } from "../mappers/emag-mapper.js";
 import {
   countBySeverity,
-  generateScore,
+  generatePageScore,
 } from "../reporters/score-generator.js";
 import {
   SeverityTypes,
@@ -172,7 +172,7 @@ async function auditLoadedPage(
   const criticalIssues = findings.filter(
     (f) => f.severity === SeverityTypes.Critical,
   ).length;
-  const score = generateScore(
+  const score = generatePageScore(
     countBySeverity(findings),
     assist.vlibras.detected || assist.handTalk.detected,
   );

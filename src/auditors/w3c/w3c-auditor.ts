@@ -6,11 +6,7 @@ import {
 } from "../../helpers/translator.js";
 import { CssValidationIssue, W3CAuditResult } from "./types.js";
 import { Finding } from "../types.js";
-import {
-  BASE_W3C_CSS_CHECKER,
-  BASE_W3C_HTML_CHECKER,
-  MAX_CSS_FINDINGS,
-} from "./config.js";
+import { MAX_CSS_FINDINGS } from "./config.js";
 import { getCss, getHtml } from "./w3c.service.js";
 
 export async function runW3CAudit(url: string): Promise<W3CAuditResult> {
@@ -40,9 +36,7 @@ export async function runW3CHtmlAudit(url: string): Promise<W3CAuditResult> {
       id: `w3c-html:${index + 1}`,
       source: "w3c",
       title,
-
       description: messageTraduzida.trim(),
-      //   impact: messageType,
       severity: normalizeSeverity(messageType),
       recommendation: recommendationFromContext(
         messageTraduzida,
@@ -50,7 +44,6 @@ export async function runW3CHtmlAudit(url: string): Promise<W3CAuditResult> {
       ),
       emagCriteria: mapToEmagCriteria(messageTraduzida),
       htmlElement: msg.extract,
-      helpUrl: BASE_W3C_HTML_CHECKER,
     };
   });
 
@@ -79,16 +72,6 @@ export async function runW3CCssAudit(url: string): Promise<W3CAuditResult> {
   const cv = data.cssvalidation!;
   const errorList = cv.errors ?? [];
   const warningList = cv.warnings ?? [];
-  const result = cv.result ?? {};
-
-  const errors =
-    typeof result.errorcount === "number"
-      ? result.errorcount
-      : errorList.length;
-  const warnings =
-    typeof result.warningcount === "number"
-      ? result.warningcount
-      : warningList.length;
 
   const errorFindings = mapCssIssuesToFindings(errorList, "error");
   const warningFindings = mapCssIssuesToFindings(warningList, "warning");
@@ -103,43 +86,66 @@ export async function runW3CCssAudit(url: string): Promise<W3CAuditResult> {
     apiAvailable: true,
     findings,
     rawSummary: {
-      errors,
-      warnings,
+      errors: errorFindings.length,
+      warnings: warningFindings.length,
     },
   };
+}
+
+function filterCssIssues(issues: CssValidationIssue[]): CssValidationIssue[] {
+  const termsToFilter = [
+    "Parse Error",
+    "Too many values or values are not recognized",
+    "is a vendor extension",
+    "is a vendor-specific value",
+    "is a vendor extended pseudo-element",
+    "is a vendor extended pseudo-class",
+    "Due to their dynamic nature, CSS variables are currently not statically checked",
+  ];
+  return issues.filter(
+    (item) =>
+      item.message.trim() !== "The types are incompatible" &&
+      !termsToFilter.some((term) => item.message.includes(term)),
+  );
 }
 
 function mapCssIssuesToFindings(
   issues: CssValidationIssue[],
   kind: "error" | "warning",
 ): Finding[] {
-  return issues.map((item, index) => {
+  return filterCssIssues(issues).map((item, index) => {
     const messageTraduzida = translateToPortuguese(item.message);
     const messageType = kind === "error" ? "serious" : "minor";
     const location =
       item.source && item.line != null
         ? `${item.source} (linha ${item.line})`
         : (item.source ?? "");
+    const description = sanitizeDescription(messageTraduzida);
 
     return {
       id: `w3c-css:${kind}-${index + 1}`,
       source: "w3c-css" as const,
       title:
         kind === "error" ? "Erro de validação CSS" : "Aviso de validação CSS",
-      description: location
-        ? `${messageTraduzida.trim()} - ${location}`
-        : messageTraduzida.trim(),
-      //   impact: messageType,
+      description,
       severity: normalizeSeverity(messageType),
       recommendation: recommendationFromContext(
         messageTraduzida,
         item.type ?? "",
       ),
       emagCriteria: mapToEmagCriteria(`${messageTraduzida} ${item.type ?? ""}`),
-      helpUrl: `${BASE_W3C_CSS_CHECKER}/`,
       cssSelector: item.context,
+      location,
     };
   });
+}
+
+function sanitizeDescription(description: string): string {
+  const trimmed = description.trim();
+  if (trimmed.endsWith(":")) {
+    return trimmed.slice(0, -1);
+  }
+  return trimmed;
 }
 
 function mergeW3cResults(

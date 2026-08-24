@@ -21,6 +21,7 @@ export interface Finding {
   htmlElement?: string;
   cssSelector?: string;
   elementCount?: number;
+  location?: string;
 }
 
 export interface AxeAuditResult {
