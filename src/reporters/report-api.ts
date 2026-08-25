@@ -3,22 +3,25 @@ import http from "node:http";
 import https from "node:https";
 import type { ConsolidatedPipelineReport } from "./report-generator.js";
 
+const GUID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export interface ReportRequest {
-  projectId: string | number;
+  projectId: string;
   report: ConsolidatedPipelineReport;
 }
 
 /**
  * Envia o relatório para a API Argos (POST /relatorios).
- * Body: { json: <relatório>, idProjeto: <number> }
+ * Body: { json: <relatório>, guidProjeto: <guid> }
  */
 export async function sendReportToApi({
   projectId,
   report,
 }: ReportRequest): Promise<void> {
-  const idProjeto = Number(projectId);
-  if (!Number.isFinite(idProjeto) || idProjeto <= 0) {
-    throw new Error(`projectId invalido: ${projectId}`);
+  const guidProjeto = projectId.trim();
+  if (!GUID_PATTERN.test(guidProjeto) || guidProjeto === "00000000-0000-0000-0000-000000000000") {
+    throw new Error(`projectId inválido (esperado Guid público): ${projectId}`);
   }
 
   const endpoint = API_RELATORIOS_ENDPOINT.trim();
@@ -33,7 +36,7 @@ export async function sendReportToApi({
 
   const body = JSON.stringify({
     json: report,
-    idProjeto,
+    guidProjeto,
   });
 
   const isLocalHost =

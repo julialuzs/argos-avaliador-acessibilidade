@@ -18,7 +18,8 @@ export interface AuditSiteConfig {
   routes?: string[];
   authenticatedFlows?: AuthenticatedFlow[];
   includeW3c?: boolean;
-  projectId?: string | number;
+  /** Guid público do projeto na API Argos */
+  projectId?: string;
 }
 
 export type AuditStepKind = "public" | "flow-login" | "flow-post-login";

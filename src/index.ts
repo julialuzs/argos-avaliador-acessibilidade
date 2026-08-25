@@ -12,7 +12,6 @@ import { API_RELATORIOS_ENDPOINT } from "./config.js";
 
 const USAGE =
   "Uso: npm run audit -- --config <arquivo.json> [--out reports/report.json]";
-const DEFAULT_OUT = "reports/report.json";
 
 async function main() {
   const { configPath, outputPath } = parseArgs();
@@ -24,7 +23,10 @@ main().catch((error: unknown) => {
   process.exit(1);
 });
 
-async function runAuditFromConfig(configPath: string, outputPath: string) {
+async function runAuditFromConfig(
+  configPath: string,
+  outputPath: string | undefined,
+) {
   console.log(`Iniciando auditoria (config: ${configPath})`);
   const config = await loadAuditConfig(configPath);
   const { records, assistiveAggregated, plan, durationMs } =
@@ -35,7 +37,9 @@ async function runAuditFromConfig(configPath: string, outputPath: string) {
     assistiveAggregated,
     durationMs,
   );
-  await writePipelineReport(report, outputPath);
+  if (outputPath) {
+    await writePipelineReport(report, outputPath);
+  }
 
   console.log(chalk.bold("\n=== Resumo (pipeline) ==="));
   console.log(`Rotas auditadas: ${report.summary.routesAudited}`);
@@ -56,7 +60,9 @@ async function runAuditFromConfig(configPath: string, outputPath: string) {
       `- ${r.path ?? r.url}${r.flowName ? ` [${r.flowName}]` : ""} | pontuação: ${r.score ?? "N/A"} | criticos: ${r.criticalIssues}`,
     );
   });
-  console.log(`\nArquivo gerado: ${outputPath} `);
+  if (outputPath) {
+    console.log(`\nArquivo gerado: ${outputPath} `);
+  }
 
   await trySendingReportToApi(config, report);
 }
@@ -78,10 +84,10 @@ async function trySendingReportToApi(
   console.log("Relatório enviado com sucesso.");
 }
 
-function parseArgs(): { configPath: string; outputPath: string } {
+function parseArgs(): { configPath: string; outputPath?: string } {
   const args = process.argv.slice(2);
   let configPath: string | undefined;
-  let outputPath = DEFAULT_OUT;
+  let outputPath: string | undefined;
 
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];

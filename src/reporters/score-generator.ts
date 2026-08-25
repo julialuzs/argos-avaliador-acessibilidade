@@ -6,8 +6,8 @@ import {
 } from "../auditors/types.js";
 
 const SEVERITY_WEIGHTS: Record<Severity, number> = {
-  1: 1,
-  2: 0.5,
+  1: 1.25,
+  2: 0.75,
   3: 0.25,
   4: 0.2,
   5: 0,

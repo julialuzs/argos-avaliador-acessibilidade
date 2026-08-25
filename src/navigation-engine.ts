@@ -25,8 +25,23 @@ export async function loadAuditConfig(configPath: string): Promise<AuditSiteConf
     authenticatedFlows: parsed.authenticatedFlows ?? [],
     includeW3c: parsed.includeW3c ?? false,
     baseUrl: parsed.baseUrl.replace(/\/$/, ""),
-    projectId: parsed.projectId,
+    projectId: resolveProjectId((parsed as { projectId?: unknown }).projectId),
   };
+}
+
+function resolveProjectId(value: unknown): string | undefined {
+  if (value == null || value === "") {
+    return undefined;
+  }
+  if (typeof value === "number") {
+    throw new Error(
+      "projectId deve ser o Guid público do projeto, não o identificador numérico interno.",
+    );
+  }
+  if (typeof value !== "string") {
+    throw new Error(`projectId inválido: ${String(value)}`);
+  }
+  return value;
 }
 
 export function buildAuditPlan(config: AuditSiteConfig): AuditPlan {
