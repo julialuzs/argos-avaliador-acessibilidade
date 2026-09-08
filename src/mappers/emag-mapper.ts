@@ -2,12 +2,12 @@ import type { Finding } from "../auditors/types.js";
 
 const emagMappings: Array<{ pattern: RegExp; criteria: string[] }> = [
   { pattern: /color|contrast/i, criteria: ["3.6.1"] },
-  { pattern: /label|name|form/i, criteria: ["3.5.1", "3.21.1"] },
+  { pattern: /label|name|form/i, criteria: ["3.5.1"] },
   { pattern: /heading|landmark|region|structure/i, criteria: ["2.4.1", "2.4.2"] },
   { pattern: /link|anchor/i, criteria: ["1.1.1", "3.1.1"] },
   { pattern: /keyboard|focus/i, criteria: ["2.1.1", "2.1.2"] },
   { pattern: /image|alt/i, criteria: ["1.1.1"] },
-  { pattern: /aria|role/i, criteria: ["3.6.1", "3.21.1"] }
+  { pattern: /aria|role/i, criteria: ["3.6.1"] }
 ];
 
 export function mapToEmagCriteria(text: string): string[] {
