@@ -102,10 +102,13 @@ function filterCssIssues(issues: CssValidationIssue[]): CssValidationIssue[] {
     "is a vendor extended pseudo-class",
     "Due to their dynamic nature, CSS variables are currently not statically checked",
   ];
+  const contextFilter = (item: CssValidationIssue) =>
+    item.context !== "" && item.context !== null && item.context !== undefined;
   return issues.filter(
     (item) =>
       item.message.trim() !== "The types are incompatible" &&
-      !termsToFilter.some((term) => item.message.includes(term)),
+      !termsToFilter.some((term) => item.message.includes(term)) &&
+      contextFilter(item),
   );
 }
 
