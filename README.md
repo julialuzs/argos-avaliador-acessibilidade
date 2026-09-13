@@ -26,33 +26,54 @@ Ferramenta criada em Node.js + TypeScript com o objetivo de auxiliar a validaç�
 
 ## Instalacao
 
-```bash
-npm install
-npx playwright install chromium
+Na raiz do projeto, crie um `argos.config.json`:
+
+```json
+{
+  "baseUrl": "https://seu-site.exemplo",
+  "routes": ["/", "/sobre"],
+  "includeW3c": true
+}
 ```
+
+O Chromium do Playwright é instalado automaticamente na primeira execução.
 
 ## Uso
 
+Na raiz do projeto (onde está o `argos.config.json`):
+
 ```bash
-npm run audit -- https://www.gov.br
+npx argos-avaliador-acessibilidade
 ```
 
-Opções:
+O CLI lê `argos.config.json` e grava `reports/report.json` por padrão. Opções:
 
-- `--no-w3c` desativa validacao W3C
-- `--json ./saida/meu-relatorio.json` altera caminho do JSON
+- `--config <arquivo.json>` — outro arquivo de configuração
+- `--out <arquivo.json>` — outro caminho para o relatório
 
-Exemplo completo:
+Para pular a instalação automática do Chromium (se você já cuida disso), defina `ARGOS_SKIP_BROWSER_INSTALL=1`.
+
+## Pipeline (qualquer CD)
+
+O mesmo comando vale no GitHub Actions, GitLab, Azure DevOps, Jenkins ou localmente:
 
 ```bash
-npm run audit -- https://www.gov.br --json ./reports/report-gov.json
+npx argos-avaliador-acessibilidade
 ```
 
-ou
+Exemplo no GitHub Actions:
 
-
-```bash
-npm run audit -- --config argos.config.ci.json --out reports/report.json
+```yaml
+- uses: actions/checkout@v4
+- uses: actions/setup-node@v4
+  with:
+    node-version: 22
+- run: npx --yes argos-avaliador-acessibilidade
+- uses: actions/upload-artifact@v4
+  if: always()
+  with:
+    name: accessibility-report
+    path: reports/
 ```
 
 ## Estrutura

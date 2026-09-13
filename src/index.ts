@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+import { resolve } from "node:path";
 import {
   buildReport,
   writePipelineReport,
@@ -7,14 +9,18 @@ import { sendReportToApi } from "./reporters/report-api.js";
 import chalk from "chalk";
 import { runAudit } from "./auditors/audit-runner.js";
 import { loadAuditConfig } from "./navigation-engine.js";
+import { ensurePlaywrightChromium } from "./helpers/ensure-playwright-chromium.js";
 import type { AuditSiteConfig } from "./auditors/audit-config.js";
 import { API_RELATORIOS_ENDPOINT } from "./config.js";
 
+const DEFAULT_CONFIG = "argos.config.json";
+const DEFAULT_OUT = "reports/report.json";
 const USAGE =
-  "Uso: npm run audit -- --config <arquivo.json> [--out reports/report.json]";
+  "Uso: npx argos-avaliador-acessibilidade [--config argos.config.json] [--out reports/report.json]";
 
 async function main() {
   const { configPath, outputPath } = parseArgs();
+  await ensurePlaywrightChromium();
   await runAuditFromConfig(configPath, outputPath);
 }
 
@@ -84,10 +90,10 @@ async function trySendingReportToApi(
   console.log("Relatório enviado com sucesso.");
 }
 
-function parseArgs(): { configPath: string; outputPath?: string } {
+function parseArgs(): { configPath: string; outputPath: string } {
   const args = process.argv.slice(2);
-  let configPath: string | undefined;
-  let outputPath: string | undefined;
+  let configPath = DEFAULT_CONFIG;
+  let outputPath = DEFAULT_OUT;
 
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
@@ -106,12 +112,10 @@ function parseArgs(): { configPath: string; outputPath?: string } {
     process.exit(1);
   }
 
-  if (!configPath) {
-    console.error(`--config é obrigatório.\n${USAGE}`);
-    process.exit(1);
-  }
-
-  return { configPath, outputPath };
+  return {
+    configPath: resolve(process.cwd(), configPath),
+    outputPath: resolve(process.cwd(), outputPath),
+  };
 }
 
 function requireFlagValue(args: string[], index: number, flag: string): string {
