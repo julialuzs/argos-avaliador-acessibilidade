@@ -4,7 +4,7 @@ import { AxeBuilder } from "@axe-core/playwright";
 import axe from "axe-core";
 import type { Result } from "axe-core";
 import ptBR from "axe-core/locales/pt_BR.json" with { type: "json" };
-import { mapToEmagCriteria } from "../../mappers/emag-mapper.js";
+import { formatAxeWcagTags } from "../../mappers/wcag-mapper.js";
 import { normalizeSeverity } from "../../mappers/severity-mapper.js";
 // import { translateToPortuguese } from "../../config/translator.js";
 import { writeRawApiReport } from "../../helpers/raw-report-writer.js";
@@ -64,10 +64,7 @@ function mapViolationsToFindings(violations: Result[]): Finding[] {
         violation.help,
         violation.description,
       ),
-      emagCriteria: mapToEmagCriteria(
-        `${violation.help} ${violation.description}`,
-      ),
-      wcagRefs: violation.tags.filter((tag: string) => tag.startsWith("wcag")),
+      wcagRefs: formatAxeWcagTags(violation.tags),
       htmlElement: violation.nodes[0]?.html,
       helpUrl: `${violation.helpUrl}&lang=pt`,
       elementCount: violation.nodes.length,

@@ -1,4 +1,4 @@
-import { mapToEmagCriteria } from "../../mappers/emag-mapper.js";
+import { mapW3cCssToWcag, mapW3cHtmlToWcag } from "../../mappers/wcag-mapper.js";
 import { normalizeSeverity } from "../../mappers/severity-mapper.js";
 import {
   recommendationFromContext,
@@ -6,7 +6,7 @@ import {
 } from "../../helpers/translator.js";
 import { CssValidationIssue, W3CAuditResult } from "./types.js";
 import { Finding } from "../types.js";
-import { MAX_CSS_FINDINGS } from "./config.js";
+import { MAX_CSS_FINDINGS, W3C_NETWORK_NOISE } from "./config.js";
 import { getCss, getHtml } from "./w3c.service.js";
 
 export async function runW3CAudit(url: string): Promise<W3CAuditResult> {
@@ -24,7 +24,9 @@ export async function runW3CHtmlAudit(url: string): Promise<W3CAuditResult> {
     return unavailableResult(url);
   }
 
-  const messages = data.messages ?? [];
+  const messages = (data.messages ?? []).filter(
+    (msg) => !isW3cNetworkNoise(msg.message),
+  );
   const findings: Finding[] = messages.map((msg, index) => {
     const messageType = msg.type === "error" ? "serious" : "minor";
     const messageTraduzida = translateToPortuguese(msg.message);
@@ -42,7 +44,7 @@ export async function runW3CHtmlAudit(url: string): Promise<W3CAuditResult> {
         messageTraduzida,
         messageTraduzida,
       ),
-      emagCriteria: mapToEmagCriteria(messageTraduzida),
+      wcagRefs: mapW3cHtmlToWcag(msg.message),
       htmlElement: msg.extract,
     };
   });
@@ -92,6 +94,10 @@ export async function runW3CCssAudit(url: string): Promise<W3CAuditResult> {
   };
 }
 
+function isW3cNetworkNoise(message: string): boolean {
+  return W3C_NETWORK_NOISE.some((term) => message.includes(term));
+}
+
 function filterCssIssues(issues: CssValidationIssue[]): CssValidationIssue[] {
   const termsToFilter = [
     "Parse Error",
@@ -101,6 +107,7 @@ function filterCssIssues(issues: CssValidationIssue[]): CssValidationIssue[] {
     "is a vendor extended pseudo-element",
     "is a vendor extended pseudo-class",
     "Due to their dynamic nature, CSS variables are currently not statically checked",
+    ...W3C_NETWORK_NOISE,
   ];
   const contextFilter = (item: CssValidationIssue) =>
     item.context !== "" && item.context !== null && item.context !== undefined;
@@ -136,7 +143,7 @@ function mapCssIssuesToFindings(
         messageTraduzida,
         item.type ?? "",
       ),
-      emagCriteria: mapToEmagCriteria(`${messageTraduzida} ${item.type ?? ""}`),
+      wcagRefs: mapW3cCssToWcag(item.message, item.context, item.type),
       cssSelector: item.context,
       location,
     };

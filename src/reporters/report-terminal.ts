@@ -53,7 +53,9 @@ function printRouteReport(report: RouteAuditRecord): void {
     );
     console.log(`   Descricao: ${finding.description}`);
     console.log(`   Recomendacao: ${finding.recommendation}`);
-    console.log(`   eMAG: ${finding.emagCriteria.join(", ")}`);
+    console.log(
+      `   WCAG: ${finding.wcagRefs.length ? finding.wcagRefs.join(", ") : "—"}`,
+    );
   });
 }
 

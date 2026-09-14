@@ -15,9 +15,8 @@ export interface Finding {
   description: string;
   severity: Severity;
   recommendation: string;
-  emagCriteria: string[];
   helpUrl?: string;
-  wcagRefs?: string[];
+  wcagRefs: string[];
   htmlElement?: string;
   cssSelector?: string;
   elementCount?: number;

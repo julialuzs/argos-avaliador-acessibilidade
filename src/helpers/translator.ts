@@ -92,5 +92,5 @@ export function recommendationFromContext(
   if (text.includes("alt") || text.includes("image"))
     return "Forneça texto alternativo significativo para imagens informativas.";
 
-  return "Revise o item com base no critério WCAG/eMAG correspondente e aplique correção no HTML/ARIA.";
+  return "Revise o item com base no critério WCAG correspondente e aplique correção no HTML/ARIA.";
 }

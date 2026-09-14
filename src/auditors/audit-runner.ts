@@ -14,7 +14,6 @@ import {
   detectAssistiveTechOnPage,
   mergeAssistiveTechDetections,
 } from "./assistive-tech-detector.js";
-import { mergeEmagCodesForReport } from "../mappers/emag-mapper.js";
 import {
   countBySeverity,
   generatePageScore,
@@ -31,7 +30,6 @@ export interface RouteAuditRecord {
   url: string;
   score: number;
   criticalIssues: number;
-  emagMappings: string[];
   findings: Finding[];
   assistiveTechnologies: AssistiveTechDetection;
 }
@@ -183,7 +181,6 @@ async function auditLoadedPage(
     url: target.fullUrl,
     score,
     criticalIssues,
-    emagMappings: mergeEmagCodesForReport(findings),
     findings,
     assistiveTechnologies: assist,
   };
