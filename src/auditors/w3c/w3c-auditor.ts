@@ -1,5 +1,5 @@
 import { mapW3cCssToWcag, mapW3cHtmlToWcag } from "../../mappers/wcag-mapper.js";
-import { normalizeSeverity } from "../../mappers/severity-mapper.js";
+import { severityFromW3c } from "../../mappers/severity-mapper.js";
 import {
   recommendationFromContext,
   translateToPortuguese,
@@ -28,7 +28,7 @@ export async function runW3CHtmlAudit(url: string): Promise<W3CAuditResult> {
     (msg) => !isW3cNetworkNoise(msg.message),
   );
   const findings: Finding[] = messages.map((msg, index) => {
-    const messageType = msg.type === "error" ? "serious" : "minor";
+    const kind = msg.type === "error" ? "error" : "warning";
     const messageTraduzida = translateToPortuguese(msg.message);
     const title =
       msg.type === "error"
@@ -39,7 +39,7 @@ export async function runW3CHtmlAudit(url: string): Promise<W3CAuditResult> {
       source: "w3c",
       title,
       description: messageTraduzida.trim(),
-      severity: normalizeSeverity(messageType),
+      severity: severityFromW3c(kind, "html"),
       recommendation: recommendationFromContext(
         messageTraduzida,
         messageTraduzida,
@@ -125,7 +125,6 @@ function mapCssIssuesToFindings(
 ): Finding[] {
   return filterCssIssues(issues).map((item, index) => {
     const messageTraduzida = translateToPortuguese(item.message);
-    const messageType = kind === "error" ? "serious" : "minor";
     const location =
       item.source && item.line != null
         ? `${item.source} (linha ${item.line})`
@@ -138,7 +137,7 @@ function mapCssIssuesToFindings(
       title:
         kind === "error" ? "Erro de validação CSS" : "Aviso de validação CSS",
       description,
-      severity: normalizeSeverity(messageType),
+      severity: severityFromW3c(kind, "css"),
       recommendation: recommendationFromContext(
         messageTraduzida,
         item.type ?? "",

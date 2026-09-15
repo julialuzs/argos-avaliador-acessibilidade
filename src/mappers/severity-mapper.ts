@@ -10,3 +10,22 @@ export function normalizeSeverity(input?: string): Severity {
 
   return SeverityTypes.Informative;
 }
+
+/**
+ * O validador W3C só distingue error vs warning/info — isso é conformidade com a spec,
+ * não impacto de acessibilidade no sentido do axe-core (critical/serious/…).
+ *
+ * HTML inválido ainda pode atrapalhar AT (nome, hierarquia, aninhamento) → Moderado.
+ * CSS inválido quase nunca é barreira de uso → Baixo.
+ * Avisos permanecem abaixo disso e não competem com violações do axe.
+ */
+export function severityFromW3c(
+  kind: "error" | "warning",
+  source: "html" | "css",
+): Severity {
+  if (kind !== "error") {
+    return SeverityTypes.Minor;
+  }
+
+  return source === "html" ? SeverityTypes.Moderate : SeverityTypes.Minor;
+}
