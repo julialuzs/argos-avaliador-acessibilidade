@@ -1,7 +1,7 @@
 import { Finding } from "../types.js";
 
 export interface W3CMessage {
-  type: "error" | "info";
+  type: "error" | "info" | string;
   subType?: string;
   message: string;
   extract?: string;

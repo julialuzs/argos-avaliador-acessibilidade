@@ -10,6 +10,7 @@ import { buildAuditPlan } from "../navigation-engine.js";
 import { performLogin } from "../handlers/auth-handler.js";
 import { runAxeOnPage } from "./axe/axe-auditor.js";
 import { runW3CAudit } from "./w3c/w3c-auditor.js";
+import { collectPageCss } from "./w3c/page-css.js";
 import {
   detectAssistiveTechOnPage,
   mergeAssistiveTechDetections,
@@ -153,12 +154,16 @@ async function auditLoadedPage(
   page: Page,
   target: PlannedAuditTarget,
   config: AuditSiteConfig,
-  //   cdpPort: number,
 ): Promise<RouteAuditRecord> {
   const axe = await runAxeOnPage(page, target.fullUrl);
   const assist = await detectAssistiveTechOnPage(page);
 
-  const w3c = config.includeW3c ? await runW3CAudit(target.fullUrl) : undefined;
+  const w3c = config.includeW3c
+    ? await runW3CAudit(target.fullUrl, {
+        html: await page.content(),
+        css: await collectPageCss(page),
+      })
+    : undefined;
   const w3cFindings = w3c?.findings ?? [];
 
   await page.goto(target.fullUrl, {

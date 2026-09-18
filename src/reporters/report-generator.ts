@@ -2,7 +2,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
 import type { AssistiveTechDetection, Severity } from "../auditors/types.js";
 import { RouteAuditRecord } from "../auditors/audit-runner.js";
-import { countBySeverity, generatePageScore, generateTotalScore } from "./score-generator.js";
+import { countBySeverity, generateTotalScore } from "./score-generator.js";
 
 export interface ConsolidatedPipelineReport {
   summary: {
@@ -37,9 +37,7 @@ export function buildReport(
 
   return {
     summary: {
-      score: generateTotalScore(
-        records,
-      ),
+      score: generateTotalScore(records),
       totalFindings: allFindings.length,
       bySeverity,
       routesAudited: records.length,

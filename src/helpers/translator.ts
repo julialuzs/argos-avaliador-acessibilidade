@@ -6,7 +6,7 @@ interface TranslationRule {
 const RULES: TranslationRule[] = [
   {
     pattern: /\bDocument does not have a main landmark\b/gi,
-    replacement: "Documento nao possui landmark principal (main).",
+    replacement: "Documento não possui landmark principal (main).",
   },
   {
     pattern: /\bDocument should have one main landmark\b/gi,
@@ -34,33 +34,33 @@ const RULES: TranslationRule[] = [
   },
   {
     pattern: /\bHeading levels should only increase by one\b/gi,
-    replacement: "Niveis de titulos devem aumentar de um em um.",
+    replacement: "Níveis de títulos devem aumentar de um em um.",
   },
   {
     pattern:
       /\bBackground and foreground colors do not have a sufficient contrast ratio\b/gi,
     replacement:
-      "Cores de fundo e primeiro plano nao possuem contraste suficiente.",
+      "Cores de fundo e primeiro plano não possuem contraste suficiente.",
   },
   {
     pattern: /\bElements must meet minimum color contrast ratio thresholds\b/gi,
-    replacement: "Elementos devem atender ao contraste minimo de cores.",
+    replacement: "Elementos devem atender ao contraste mínimo de cores.",
   },
   {
     pattern: /\bPage must contain a level-one heading\b/gi,
-    replacement: "Pagina deve conter um titulo de nivel 1.",
+    replacement: "Página deve conter um título de nível 1.",
   },
   {
     pattern: /\bAvoid large layout shifts\b/gi,
-    replacement: "Evite grandes mudancas de layout.",
+    replacement: "Evite grandes mudanças de layout.",
   },
   {
     pattern: /\bEnsure all ARIA attributes have valid values\b/gi,
-    replacement: "Garanta que todos os atributos ARIA tenham valores validos.",
+    replacement: "Garanta que todos os atributos ARIA tenham valores válidos.",
   },
   {
     pattern: /\bARIA input fields must have an accessible name\b/gi,
-    replacement: "Campos ARIA devem ter nome acessivel.",
+    replacement: "Campos ARIA devem ter nome acessível.",
   },
 ];
 
@@ -81,9 +81,17 @@ export function recommendationFromContext(
 
   if (text.includes("contrast") || text.includes("contraste"))
     return "Ajuste contraste de cores para atender WCAG AA.";
-  if (text.includes("label") || text.includes("rótulo") || text.includes("rotulo"))
+  if (
+    text.includes("label") ||
+    text.includes("rótulo") ||
+    text.includes("rotulo")
+  )
     return "Associe rótulos explícitos a todos os campos de formulário.";
-  if (text.includes("heading") || text.includes("título") || text.includes("titulo"))
+  if (
+    text.includes("heading") ||
+    text.includes("título") ||
+    text.includes("titulo")
+  )
     return "Estruture títulos hierarquicamente sem saltos de nível.";
   if (text.includes("link"))
     return "Garanta texto de link descritivo e sem ambiguidade.";

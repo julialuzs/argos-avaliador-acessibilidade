@@ -34,8 +34,7 @@ const RULES: TranslationRule[] = [
       String.raw`^The ${quoted} attribute on the ${quoted} element is obsolete\. Use CSS instead\.$`,
       "i",
     ),
-    replacement:
-      "O atributo “$1” no elemento “$2” está obsoleto. Use CSS.",
+    replacement: "O atributo “$1” no elemento “$2” está obsoleto. Use CSS.",
   },
   {
     pattern: new RegExp(
@@ -88,7 +87,8 @@ const RULES: TranslationRule[] = [
       String.raw`^Bad value ${OPEN}([^”"']*)${CLOSE} for attribute ${quoted} on element ${quoted}(?:[:.]\s*(.*))?$`,
       "i",
     ),
-    replacement: "Valor “$1” inválido para o atributo “$2” no elemento “$3”. $4",
+    replacement:
+      "Valor “$1” inválido para o atributo “$2” no elemento “$3”. $4",
   },
   {
     pattern: new RegExp(String.raw`^Duplicate ID ${quoted}\.$`, "i"),
@@ -161,7 +161,8 @@ const RULES: TranslationRule[] = [
       String.raw`^Saw an end tag after ${quoted} had been closed\.$`,
       "i",
     ),
-    replacement: "Tag de fechamento encontrada depois que “$1” já havia sido fechado.",
+    replacement:
+      "Tag de fechamento encontrada depois que “$1” já havia sido fechado.",
   },
   {
     pattern: new RegExp(
@@ -228,7 +229,8 @@ const RULES: TranslationRule[] = [
       String.raw`^Element ${quoted} must not appear as a descendant of the ${quoted} element\.$`,
       "i",
     ),
-    replacement: "O elemento “$1” não deve aparecer como descendente do elemento “$2”.",
+    replacement:
+      "O elemento “$1” não deve aparecer como descendente do elemento “$2”.",
   },
   {
     pattern: new RegExp(
@@ -298,7 +300,8 @@ const RULES: TranslationRule[] = [
       "Um atributo “charset” em um elemento meta foi encontrado depois dos primeiros 1024 bytes.",
   },
   {
-    pattern: /^Almost standards mode doctype\. Expected [“"']<!DOCTYPE html>[”"']\.$/i,
+    pattern:
+      /^Almost standards mode doctype\. Expected [“"']<!DOCTYPE html>[”"']\.$/i,
     replacement:
       "Doctype em modo quase-padrão. O esperado era “<!DOCTYPE html>”.",
   },
@@ -346,6 +349,13 @@ const RULES: TranslationRule[] = [
     pattern:
       /^The [“"']button[”"'] role is unnecessary for element [“"']button[”"']\.$/i,
     replacement: "O papel “button” é desnecessário para o elemento “button”.",
+  },
+  {
+    pattern: new RegExp(
+      String.raw`^Element ${quoted} must not be empty\.$`,
+      "i",
+    ),
+    replacement: "O elemento “$1” não pode ser vazio.",
   },
 ];
 

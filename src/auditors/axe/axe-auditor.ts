@@ -6,7 +6,6 @@ import type { Result } from "axe-core";
 import ptBR from "axe-core/locales/pt_BR.json" with { type: "json" };
 import { formatAxeWcagTags } from "../../mappers/wcag-mapper.js";
 import { normalizeSeverity } from "../../mappers/severity-mapper.js";
-// import { translateToPortuguese } from "../../config/translator.js";
 import { writeRawApiReport } from "../../helpers/raw-report-writer.js";
 import { AxeAuditResult, Finding } from "../types.js";
 import { recommendationFromContext } from "../../helpers/translator.js";
@@ -50,15 +49,11 @@ export async function runAxeOnPage(
 
 function mapViolationsToFindings(violations: Result[]): Finding[] {
   return violations.map((violation: Result) => {
-    // const translatedTitle = translateToPortuguese(violation.help);
-    // const translatedDescription = translateToPortuguese(violation.description);
-    // const description = `${violation.help}. Ajuda: ${violation.description}`;
     return {
       id: `axe:${violation.id}`,
       source: "axe",
       title: violation.help,
       description: violation.description,
-      //   impact: violation.impact ?? "unknown",
       severity: normalizeSeverity(violation.impact ?? undefined),
       recommendation: recommendationFromContext(
         violation.help,
