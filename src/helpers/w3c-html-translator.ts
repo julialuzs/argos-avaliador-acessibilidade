@@ -7,6 +7,7 @@ interface TranslationRule {
 const OPEN = String.raw`[“"']`;
 const CLOSE = String.raw`[”"']`;
 const quoted = String.raw`${OPEN}([^”"']+)${CLOSE}`;
+const quotedMaybeEmpty = String.raw`${OPEN}([^”"']*)${CLOSE}`;
 
 /**
  * Templates mais frequentes do W3C Nu HTML Checker.
@@ -91,12 +92,23 @@ const RULES: TranslationRule[] = [
       "Valor “$1” inválido para o atributo “$2” no elemento “$3”. $4",
   },
   {
-    pattern: new RegExp(String.raw`^Duplicate ID ${quoted}\.$`, "i"),
+    pattern: new RegExp(String.raw`^Duplicate ID ${OPEN}${CLOSE}\.$`, "i"),
+    replacement: "ID duplicado vazio.",
+  },
+  {
+    pattern: new RegExp(String.raw`^Duplicate ID ${quotedMaybeEmpty}\.$`, "i"),
     replacement: "ID duplicado: “$1”.",
   },
   {
     pattern: new RegExp(
-      String.raw`^The first occurrence of ID ${quoted} was here\.$`,
+      String.raw`^The first occurrence of ID ${OPEN}${CLOSE} was here\.$`,
+      "i",
+    ),
+    replacement: "A primeira ocorrência do ID vazio foi aqui.",
+  },
+  {
+    pattern: new RegExp(
+      String.raw`^The first occurrence of ID ${quotedMaybeEmpty} was here\.$`,
       "i",
     ),
     replacement: "A primeira ocorrência do ID “$1” foi aqui.",
@@ -356,6 +368,37 @@ const RULES: TranslationRule[] = [
       "i",
     ),
     replacement: "O elemento “$1” não pode ser vazio.",
+  },
+  {
+    pattern: new RegExp(
+      String.raw`^The only allowed value for the ${quoted} attribute for the ${quoted} element is ${quoted}\. \(But the attribute is not needed and should be omitted altogether\.\)$`,
+      "i",
+    ),
+    replacement:
+      "O único valor permitido para o atributo “$1” do elemento “$2” é “$3”. (Mas o atributo não é necessário e deve ser omitido.)",
+  },
+  {
+    pattern: new RegExp(
+      String.raw`^Element ${quoted} must not have attribute ${quoted} unless attribute ${quoted} is also specified\.$`,
+      "i",
+    ),
+    replacement:
+      "O elemento “$1” não deve ter o atributo “$2” a menos que o atributo “$3” também esteja especificado.",
+  },
+  {
+    pattern: new RegExp(
+      String.raw`^The ${quoted} attribute was specified, but the element is not a property of any item\.?$`,
+      "i",
+    ),
+    replacement:
+      "O atributo “$1” foi especificado, mas o elemento não é propriedade de nenhum item.",
+  },
+  {
+    pattern: new RegExp(
+      String.raw`^The ${quoted} attribute on the ${quoted} element is obsolete\.$`,
+      "i",
+    ),
+    replacement: "O atributo “$1” no elemento “$2” está obsoleto.",
   },
 ];
 
