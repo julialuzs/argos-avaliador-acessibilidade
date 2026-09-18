@@ -5,7 +5,7 @@ import { CssValidationPayload, W3CResponse } from "./types.js";
 export async function getCss(
   url: string,
 ): Promise<CssValidationPayload | null> {
-  const endpoint = `${BASE_W3C_CSS_CHECKER}/validator?uri=${encodeURIComponent(url)}&output=json&profile=css3svg`;
+  const endpoint = `${BASE_W3C_CSS_CHECKER}/validator?uri=${encodeURIComponent(url)}&output=json&profile=css3svg&lang=pt-BR`;
 
   try {
     const response = await fetch(endpoint, {

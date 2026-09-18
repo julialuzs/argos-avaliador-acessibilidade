@@ -79,17 +79,28 @@ export function recommendationFromContext(
 ): string {
   const text = `${title} ${description}`.toLowerCase();
 
-  if (text.includes("contrast"))
+  if (text.includes("contrast") || text.includes("contraste"))
     return "Ajuste contraste de cores para atender WCAG AA.";
-  if (text.includes("label"))
+  if (text.includes("label") || text.includes("rótulo") || text.includes("rotulo"))
     return "Associe rótulos explícitos a todos os campos de formulário.";
-  if (text.includes("heading"))
+  if (text.includes("heading") || text.includes("título") || text.includes("titulo"))
     return "Estruture títulos hierarquicamente sem saltos de nível.";
   if (text.includes("link"))
     return "Garanta texto de link descritivo e sem ambiguidade.";
-  if (text.includes("keyboard") || text.includes("focus"))
+  if (
+    text.includes("keyboard") ||
+    text.includes("focus") ||
+    text.includes("teclado") ||
+    text.includes("foco")
+  )
     return "Assegure navegação completa por teclado e foco visível.";
-  if (text.includes("alt") || text.includes("image"))
+  if (
+    /\balt\b/.test(text) ||
+    text.includes("texto alternativo") ||
+    text.includes("alternate text") ||
+    text.includes("image") ||
+    text.includes("imagem")
+  )
     return "Forneça texto alternativo significativo para imagens informativas.";
 
   return "Revise o item com base no critério WCAG correspondente e aplique correção no HTML/ARIA.";

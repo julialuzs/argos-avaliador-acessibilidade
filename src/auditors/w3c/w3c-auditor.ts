@@ -1,9 +1,7 @@
 import { mapW3cCssToWcag, mapW3cHtmlToWcag } from "../../mappers/wcag-mapper.js";
 import { severityFromW3c } from "../../mappers/severity-mapper.js";
-import {
-  recommendationFromContext,
-  translateToPortuguese,
-} from "../../helpers/translator.js";
+import { recommendationFromContext } from "../../helpers/translator.js";
+import { translateW3cHtmlMessage } from "../../helpers/w3c-html-translator.js";
 import { CssValidationIssue, W3CAuditResult } from "./types.js";
 import { Finding } from "../types.js";
 import { MAX_CSS_FINDINGS, W3C_NETWORK_NOISE } from "./config.js";
@@ -29,7 +27,7 @@ export async function runW3CHtmlAudit(url: string): Promise<W3CAuditResult> {
   );
   const findings: Finding[] = messages.map((msg, index) => {
     const kind = msg.type === "error" ? "error" : "warning";
-    const messageTraduzida = translateToPortuguese(msg.message);
+    const messageTraduzida = translateW3cHtmlMessage(msg.message);
     const title =
       msg.type === "error"
         ? "Erro de validação estrutural"
@@ -41,7 +39,7 @@ export async function runW3CHtmlAudit(url: string): Promise<W3CAuditResult> {
       description: messageTraduzida.trim(),
       severity: severityFromW3c(kind, "html"),
       recommendation: recommendationFromContext(
-        messageTraduzida,
+        msg.message,
         messageTraduzida,
       ),
       wcagRefs: mapW3cHtmlToWcag(msg.message),
@@ -101,19 +99,27 @@ function isW3cNetworkNoise(message: string): boolean {
 function filterCssIssues(issues: CssValidationIssue[]): CssValidationIssue[] {
   const termsToFilter = [
     "Parse Error",
+    "Erro de parseamento",
     "Too many values or values are not recognized",
+    "Presença de muitos valores ou valores não reconhecidos",
     "is a vendor extension",
     "is a vendor-specific value",
     "is a vendor extended pseudo-element",
     "is a vendor extended pseudo-class",
+    "propriedade proprietária",
+    "pseudoclasse proprietária",
+    "pseudoelemento proprietário",
     "Due to their dynamic nature, CSS variables are currently not statically checked",
+    "Valores gerados dinâmicamente",
     ...W3C_NETWORK_NOISE,
   ];
   const contextFilter = (item: CssValidationIssue) =>
     item.context !== "" && item.context !== null && item.context !== undefined;
+  const message = (item: CssValidationIssue) => item.message.trim();
   return issues.filter(
     (item) =>
-      item.message.trim() !== "The types are incompatible" &&
+      message(item) !== "The types are incompatible" &&
+      message(item) !== "Os tipos são incompatíveis." &&
       !termsToFilter.some((term) => item.message.includes(term)) &&
       contextFilter(item),
   );
@@ -124,12 +130,11 @@ function mapCssIssuesToFindings(
   kind: "error" | "warning",
 ): Finding[] {
   return filterCssIssues(issues).map((item, index) => {
-    const messageTraduzida = translateToPortuguese(item.message);
     const location =
       item.source && item.line != null
         ? `${item.source} (linha ${item.line})`
         : (item.source ?? "");
-    const description = sanitizeDescription(messageTraduzida);
+    const description = sanitizeDescription(item.message);
 
     return {
       id: `w3c-css:${kind}-${index + 1}`,
@@ -139,7 +144,7 @@ function mapCssIssuesToFindings(
       description,
       severity: severityFromW3c(kind, "css"),
       recommendation: recommendationFromContext(
-        messageTraduzida,
+        item.message,
         item.type ?? "",
       ),
       wcagRefs: mapW3cCssToWcag(item.message, item.context, item.type),
