@@ -1,3 +1,5 @@
+import { MARKUP_VALIDATOR_MESSAGES } from "./w3c-markup-validator-catalog.js";
+
 interface TranslationRule {
   pattern: RegExp;
   replacement: string;
@@ -10,7 +12,8 @@ const quoted = String.raw`${OPEN}([^”"']+)${CLOSE}`;
 const quotedMaybeEmpty = String.raw`${OPEN}([^”"']*)${CLOSE}`;
 
 /**
- * Templates mais frequentes do W3C Nu HTML Checker.
+ * Templates do Nu HTML Checker, seguidos do catálogo legado
+ * https://validator.w3.org/docs/errors.html
  * Mensagens não reconhecidas permanecem em inglês.
  */
 const RULES: TranslationRule[] = [
@@ -400,7 +403,23 @@ const RULES: TranslationRule[] = [
     ),
     replacement: "O atributo “$1” no elemento “$2” está obsoleto.",
   },
+  ...rulesFromCatalog(MARKUP_VALIDATOR_MESSAGES),
 ];
+
+function rulesFromCatalog(
+  entries: ReadonlyArray<readonly [string, string]>,
+): TranslationRule[] {
+  const rules = entries.map(([en, pt]) => {
+    const parts = en.split("%s");
+    const source =
+      "^" +
+      parts.map((p) => p.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("(.+?)") +
+      "$";
+    return { pattern: new RegExp(source, "i"), replacement: pt };
+  });
+  rules.sort((a, b) => b.pattern.source.length - a.pattern.source.length);
+  return rules;
+}
 
 const FRAGMENTS: TranslationRule[] = [
   {
