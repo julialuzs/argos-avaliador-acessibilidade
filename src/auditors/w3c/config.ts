@@ -12,3 +12,22 @@ export const W3C_NETWORK_NOISE = [
   "HTTP resource not retrievable",
   "The HTTP status from the remote server was",
 ];
+
+/** Atributos de framework (Angular, PrimeNG, VLibras) — não são barreira de acessibilidade. */
+export const W3C_FRAMEWORK_ATTRIBUTES = new Set([
+  "routerlink",
+  "routerlinkactive",
+  "formcontrolname",
+  "formgroupname",
+  "pbutton",
+  "plabel",
+  "pinputtext",
+  "pinputpassword",
+  "variant",
+  "vw",
+  "vw-access-button",
+  "vw-plugin-wrapper",
+  "email",
+]);
+
+export const W3C_FRAMEWORK_SIZE_ELEMENTS = new Set(["a", "svg", "button"]);

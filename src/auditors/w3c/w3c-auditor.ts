@@ -14,7 +14,12 @@ import {
   W3CResponse,
 } from "./types.js";
 import { Finding } from "../types.js";
-import { MAX_CSS_FINDINGS, W3C_NETWORK_NOISE } from "./config.js";
+import {
+  MAX_CSS_FINDINGS,
+  W3C_FRAMEWORK_ATTRIBUTES,
+  W3C_FRAMEWORK_SIZE_ELEMENTS,
+  W3C_NETWORK_NOISE,
+} from "./config.js";
 import { getCss, getHtml } from "./w3c.service.js";
 
 export async function runW3CAudit(
@@ -97,7 +102,7 @@ function mapVnuMessages(
   source: "w3c" | "w3c-css",
 ): W3CAuditResult {
   const filtered = messages.filter(
-    (msg) => msg.message && !isW3cNetworkNoise(msg.message),
+    (msg) => msg.message && !isIgnorableW3cMessage(msg.message, source),
   );
   const findings: Finding[] = filtered.map((msg, index) => {
     const kind = msg.type === "error" ? "error" : "warning";
@@ -144,12 +149,70 @@ function mapVnuMessages(
   };
 }
 
-function isW3cNetworkNoise(message: string): boolean {
-  return W3C_NETWORK_NOISE.some((term) => message.includes(term));
+function isIgnorableW3cMessage(
+  message: string,
+  source: "w3c" | "w3c-css",
+): boolean {
+  if (W3C_NETWORK_NOISE.some((term) => message.includes(term))) {
+    return true;
+  }
+
+  if (source === "w3c" && /^CSS:/i.test(message)) {
+    return true;
+  }
+
+  if (source === "w3c" && isFrameworkAttributeNoise(message)) {
+    return true;
+  }
+
+  if (source === "w3c-css" && isCssEngineNoise(message)) {
+    return true;
+  }
+
+  return false;
+}
+
+function isCssEngineNoise(message: string): boolean {
+  if (/parse error/i.test(message)) return true;
+  if (/Cannot invoke /i.test(message)) return true;
+  if (/Unrecognized at-rule/i.test(message)) return true;
+  if (/“--[\w-]+”/.test(message)) return true;
+  if (/margin-trim/i.test(message)) return true;
+  return false;
+}
+
+function isFrameworkAttributeNoise(message: string): boolean {
+  const attr =
+    message.match(/atributo “([^”]+)”/i)?.[1] ??
+    message.match(/Attribute “([^”]+)”/i)?.[1];
+  if (!attr) return false;
+
+  const name = attr.toLowerCase();
+  if (
+    name.startsWith("_ngcontent-") ||
+    name.startsWith("_nghost-") ||
+    name.startsWith("ng-") ||
+    /^pc\d+$/.test(name)
+  ) {
+    return true;
+  }
+
+  if (W3C_FRAMEWORK_ATTRIBUTES.has(name)) {
+    return true;
+  }
+
+  if (name === "size") {
+    const element =
+      message.match(/elemento “([^”]+)”/i)?.[1] ??
+      message.match(/element “([^”]+)”/i)?.[1];
+    return W3C_FRAMEWORK_SIZE_ELEMENTS.has((element ?? "").toLowerCase());
+  }
+
+  return false;
 }
 
 function isCssNoise(message: string): boolean {
-  return /parse error/i.test(message);
+  return isCssEngineNoise(message);
 }
 
 function filterCssIssues(issues: CssValidationIssue[]): CssValidationIssue[] {
