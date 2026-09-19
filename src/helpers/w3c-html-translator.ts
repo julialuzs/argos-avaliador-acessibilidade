@@ -88,6 +88,22 @@ const RULES: TranslationRule[] = [
   },
   {
     pattern: new RegExp(
+      String.raw`^Element ${quoted} is missing a required instance of child element ${quoted}\.$`,
+      "i",
+    ),
+    replacement:
+      "O elemento “$1” está sem uma instância obrigatória do elemento filho “$2”.",
+  },
+  {
+    pattern: new RegExp(
+      String.raw`^Element ${quoted} is missing one or more of the following attributes: (.+)\.$`,
+      "i",
+    ),
+    replacement:
+      "O elemento “$1” está sem um ou mais dos seguintes atributos: $2.",
+  },
+  {
+    pattern: new RegExp(
       String.raw`^Bad value ${OPEN}([^”"']*)${CLOSE} for attribute ${quoted} on element ${quoted}(?:[:.]\s*(.*))?$`,
       "i",
     ),
@@ -200,6 +216,14 @@ const RULES: TranslationRule[] = [
       "Este documento parece estar escrito em $1, mas a tag de abertura “html” não começa com $2. Considere adicionar $3 à tag de abertura “html”.",
   },
   {
+    pattern: new RegExp(
+      String.raw`^This document appears to be written in (.+?)\. Consider adding ${OPEN}(.+?)${CLOSE} \(or variant\) to the ${quoted} start tag\.$`,
+      "i",
+    ),
+    replacement:
+      "Este documento parece estar escrito em $1. Considere adicionar “$2” (ou uma variante) à tag de abertura “$3”.",
+  },
+  {
     pattern:
       /^Section lacks heading\. Consider using [“"']h2[”"']-[“"']h6[”"'] elements to add identifying headings to all sections, or else use a [“"']div[”"'] instead of a [“"']section[”"'] element\.$/i,
     replacement:
@@ -246,6 +270,22 @@ const RULES: TranslationRule[] = [
     ),
     replacement:
       "O elemento “$1” não deve aparecer como descendente do elemento “$2”.",
+  },
+  {
+    pattern: new RegExp(
+      String.raw`^The element ${quoted} must not appear as a descendant of an element with the attribute ${quoted}\.$`,
+      "i",
+    ),
+    replacement:
+      "O elemento “$1” não deve aparecer como descendente de um elemento com o atributo “$2”.",
+  },
+  {
+    pattern: new RegExp(
+      String.raw`^A ${quoted} element must not appear as a descendant of a ${quoted} element unless the ${quoted} element has an ${quoted} attribute or has a ${quoted} attribute whose value contains (.+)\.$`,
+      "i",
+    ),
+    replacement:
+      "Um elemento “$1” não deve aparecer como descendente de um elemento “$2”, a menos que o elemento “$3” tenha o atributo “$4” ou o atributo “$5” cujo valor contenha $6.",
   },
   {
     pattern: new RegExp(
@@ -309,10 +349,18 @@ const RULES: TranslationRule[] = [
       "A declaração interna de codificação “$1” discrepa da codificação real do documento (“$2”).",
   },
   {
-    pattern:
-      /^A [“"']charset[”"'] attribute on a meta element found after the first 1024 bytes\.$/i,
+    pattern: new RegExp(
+      String.raw`^A ${quoted} attribute on a ${quoted} element found after the first 1024 bytes\.$`,
+      "i",
+    ),
     replacement:
-      "Um atributo “charset” em um elemento meta foi encontrado depois dos primeiros 1024 bytes.",
+      "Um atributo “$1” em um elemento “$2” foi encontrado depois dos primeiros 1024 bytes.",
+  },
+  {
+    pattern:
+      /^Document uses the Unicode Private Use Area\(s\), which should not be used in publicly exchanged documents\. \(Charmod C073\)$/i,
+    replacement:
+      "O documento usa Área(s) de Uso Privado do Unicode, que não devem ser usadas em documentos trocados publicamente. (Charmod C073)",
   },
   {
     pattern:
@@ -423,8 +471,38 @@ function rulesFromCatalog(
 
 const FRAGMENTS: TranslationRule[] = [
   {
+    pattern:
+      /Expected a minus sign or a digit but saw [“"']([^”"']+)[”"'] instead\./gi,
+    replacement:
+      "Era esperado um sinal de menos ou um dígito, mas foi encontrado “$1”.",
+  },
+  {
     pattern: /Expected a digit but saw [“"']([^”"']+)[”"'] instead\./gi,
     replacement: "Era esperado um dígito, mas foi encontrado “$1”.",
+  },
+  {
+    pattern: /The string [“"']([^”"']+)[”"'] is not a valid keyword\./gi,
+    replacement: "A string “$1” não é uma palavra-chave válida.",
+  },
+  {
+    pattern: /, or /gi,
+    replacement: ", ou ",
+  },
+  {
+    pattern: /\bPortuguese\b/gi,
+    replacement: "português",
+  },
+  {
+    pattern: /\bEnglish\b/gi,
+    replacement: "inglês",
+  },
+  {
+    pattern: /\bSpanish\b/gi,
+    replacement: "espanhol",
+  },
+  {
+    pattern: /\bFrench\b/gi,
+    replacement: "francês",
   },
   {
     pattern: /Must be non-negative\./gi,
